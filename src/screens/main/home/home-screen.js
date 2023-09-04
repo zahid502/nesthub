@@ -1,3 +1,10 @@
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ *
+ * @format
+ */
+
 import React from 'react';
 import {View} from 'react-native';
 
@@ -7,7 +14,6 @@ import CustomHeader from '../../../components/CustomHeader';
 import CustomStatusBar from '../../../components/CustomStatusBar';
 import TopTabNavigator from '../../../navigations/TopTabNavigator';
 import {setUserData} from '../../../redux/slices/auth/auth-slice';
-
 const HomeScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const gotoLogout = () => {
