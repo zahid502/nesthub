@@ -12,6 +12,7 @@ import CustomButton from '../../../components/CustomButton';
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
 import styles from './style';
+import {signup} from '@services/api-services';
 
 const SignupScreen = ({navigation}) => {
   const [name, setName] = useState('');
@@ -29,7 +30,23 @@ const SignupScreen = ({navigation}) => {
         uid: user?.user?.uid,
         profileImage: 'https://cdn-icons-png.flaticon.com/512/9187/9187604.png',
       })
-      .then(() => console.log('Data set.'));
+      .then(() => {
+        signupApiCall(user, name, password);
+        console.log('Data set.');
+      });
+  };
+
+  const signupApiCall = async (user, name, password) => {
+    try {
+      const data = await signup(user, name, password);
+      if (data?.status === 200) {
+        setIsLoading(false);
+        navigation.navigate('OtpVerification', email);
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error handling get comments API response:', error);
+    }
   };
 
   const handleSignup = () => {
@@ -64,12 +81,9 @@ const SignupScreen = ({navigation}) => {
         .createUserWithEmailAndPassword(email, password)
         .then(user => {
           signupUser(user);
-
-          navigation.navigate('LoginScreen');
           setName('');
           setEmail('');
           setPassword('');
-          setIsLoading(false);
         })
         .catch(error => {
           if (error.code === 'auth/email-already-in-use') {
@@ -92,7 +106,7 @@ const SignupScreen = ({navigation}) => {
         style={styles.container}>
         <View style={styles.headerContainer}>
           <Image
-            source={require('../../../assets/images/unnamed.png')}
+            source={require('../../../assets/images/logo.png')}
             style={styles.logoImg}
           />
         </View>
@@ -143,7 +157,7 @@ const SignupScreen = ({navigation}) => {
             <Text style={styles.newUserText}>Already a user? </Text>
             <Text
               style={styles.signupLinkText}
-              onPress={() => navigation.navigate('LoginScreen')}>
+              onPress={() => navigation.navigate('Login')}>
               Login
             </Text>
           </View>

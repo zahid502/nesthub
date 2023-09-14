@@ -4,7 +4,6 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -17,16 +16,16 @@ import styles from './style';
 
 const ContactsScreen = ({navigation}) => {
   const [contacts, setContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const {userId} = useSelector(state => state.auth);
 
   useEffect(() => {
     setLoading(true);
-    const contactsRef = database().ref('users');
+    const contactsRef = database().ref(`users`);
     contactsRef.once('value', snapshot => {
       const data = snapshot.val();
-      const contactsArray = Object.values(data);
-      setContacts(contactsArray);
+      const contactArray = Object.values(data);
+      setContacts(contactArray);
       setLoading(false);
     });
   }, []);
@@ -37,7 +36,7 @@ const ContactsScreen = ({navigation}) => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backIconView}
-            onPress={() => navigation.navigate('HomeScreen')}>
+            onPress={() => navigation.navigate('Home')}>
             <Ionicons name="arrow-back-outline" size={25} color={'white'} />
           </TouchableOpacity>
 
@@ -67,7 +66,6 @@ const ContactsScreen = ({navigation}) => {
                 name="dots-three-vertical"
                 size={20}
                 color={'white'}
-                style={{}}
               />
             </TouchableOpacity>
           </View>
@@ -103,6 +101,9 @@ const ContactsScreen = ({navigation}) => {
                     <Text style={styles.usernameText} numberOfLines={1}>
                       {item?.name}
                     </Text>
+                    <Text style={styles.msgText} numberOfLines={1}>
+                      {'Busy'}
+                    </Text>
                   </View>
                 </TouchableOpacity>
               )}
@@ -110,12 +111,6 @@ const ContactsScreen = ({navigation}) => {
           );
         }}
       />
-      {loading && (
-        <View
-          style={styles.loader}>
-          <ActivityIndicator size={'large'} color={'red'}></ActivityIndicator>
-        </View>
-      )}
     </View>
   );
 };

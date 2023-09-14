@@ -13,8 +13,8 @@ const CustomFloatingActionbutton = ({onPress}) => {
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: 30,
-    right: 30,
+    bottom: 110,
+    right: 20,
     width: 55,
     height: 55,
     borderRadius: 27,

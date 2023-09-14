@@ -1,20 +1,19 @@
-import React from 'react';
 import {StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-    marginTop:10
+    paddingVertical: 10,
   },
   chatContainer: {
     flex: 1,
     flexDirection: 'row',
     padding: 10,
     borderRadius: 10,
-    backgroundColor:"lightgray",
-    marginHorizontal:10,
-    marginBottom:10
+    backgroundColor: 'lightgray',
+    marginHorizontal: 10,
+    marginBottom: 10,
   },
   imgView: {
     flex: 0.5,

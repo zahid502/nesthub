@@ -7,6 +7,7 @@ import {
   TextInput,
   ImageBackground,
 } from 'react-native';
+import _ from 'lodash';
 import React, {useEffect, useState} from 'react';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -14,12 +15,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '@react-native-firebase/database';
 import {useDispatch, useSelector} from 'react-redux';
 import {
-  setMessageNew,
   setMessages,
+  setMessageNew,
+  setCurrentRef,
+  setPagination,
 } from '../../../redux/slices/chat/chat-slice';
 import styles from './style';
 import ChatHeader from '../../../components/ChatHeader';
-import { DateUtil } from '../../../utils/date-util';
+import {DateUtil} from '../../../utils/date-util';
 
 const img = {
   uri: 'https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png',
@@ -33,7 +36,10 @@ const ChatScreen = ({route, navigation}) => {
 
   const dispatch = useDispatch();
   const {userId, userName, userProfile} = useSelector(state => state.auth);
-  const {messages} = useSelector(state => state.chat);
+  const {messages, currentRef} = useSelector(state => state.chat);
+  const messageNode = `${userId}-${uid}`;
+  const messageNode1 = `${uid}-${userId}`;
+
   const [newMessage, setNewMessage] = useState('');
   const [textInputHeight, setTextInputHeight] = useState(70);
 
@@ -46,10 +52,53 @@ const ChatScreen = ({route, navigation}) => {
       type: 'text',
       dateTime: dateTime,
     };
-    setNewMessage('');
 
-    const messageNode = `${userId}-${uid}`;
-    const messageNode1 = `${uid}-${userId}`;
+    setNewMessage('');
+    database()
+      .ref('users/' + userId + '/connection/' + uid)
+      .once('value', snapshot => {
+        if (!snapshot.exists()) {
+          database()
+            .ref('users/' + userId + '/connection/' + uid)
+            .set({
+              name,
+              uid,
+              profileImage,
+              lastMsgDateTime: dateTime,
+              lastMsg: newMessage,
+            });
+
+          database()
+            .ref('users/' + uid + '/connection/' + userId)
+            .set({
+              name: userName,
+              uid: userId,
+              profileImage: userProfile,
+              lastMsgDateTime: dateTime,
+              lastMsg: newMessage,
+            });
+        } else {
+          database()
+            .ref('users/' + userId + '/connection/' + uid)
+            .transaction(snapshot => {
+              const previusData = snapshot;
+              if (!previusData) return snapshot;
+              previusData.lastMsgDateTime = dateTime;
+              previusData.lastMsg = newMessage;
+              return previusData;
+            });
+          database()
+            .ref('users/' + uid + '/connection/' + userId)
+            .transaction(snapshot => {
+              const previusData = snapshot;
+              if (!previusData) return snapshot;
+              previusData.lastMsgDateTime = dateTime;
+              previusData.lastMsg = newMessage;
+              return previusData;
+            });
+        }
+      });
+
     database()
       .ref('messages')
       .child(messageNode)
@@ -68,8 +117,6 @@ const ChatScreen = ({route, navigation}) => {
     getData();
     return () => {
       dispatch(setMessages([]));
-      const messageNode = `${userId}-${uid}`;
-      const messageNode1 = `${uid}-${userId}`;
       database()
         .ref('messages/' + messageNode)
         .off();
@@ -80,17 +127,17 @@ const ChatScreen = ({route, navigation}) => {
   }, []);
 
   const getData = async () => {
-    const messageNode = `${userId}-${uid}`;
-    const messageNode1 = `${uid}-${userId}`;
     const usersRef = database().ref('messages/' + messageNode);
     usersRef.once('value', snapshot => {
       if (snapshot.exists()) {
         refGetData(usersRef);
         refGetDataListener(usersRef);
+        dispatch(setCurrentRef(usersRef));
       } else {
         const usersRef1 = database().ref('messages/' + messageNode1);
         refGetData(usersRef1);
         refGetDataListener(usersRef1);
+        dispatch(setCurrentRef(usersRef1));
       }
     });
   };
@@ -98,7 +145,7 @@ const ChatScreen = ({route, navigation}) => {
   const refGetData = usersRef => {
     usersRef
       .orderByChild('dateTime')
-      .limitToLast(10)
+      .limitToLast(15)
       .once('value', snapshot => {
         if (snapshot.exists()) {
           let msgArr = [];
@@ -109,6 +156,7 @@ const ChatScreen = ({route, navigation}) => {
               senderId: snap?.child('senderId').val(),
               sender: snap?.child('sender').val(),
               type: snap?.child('type').val(),
+              id: snap?.key,
             });
           });
           dispatch(setMessages(msgArr));
@@ -125,10 +173,38 @@ const ChatScreen = ({route, navigation}) => {
           senderId: snapshot.child('senderId').val(),
           sender: snapshot.child('sender').val(),
           type: snapshot.child('type').val(),
+          id: snapshot?.key,
         };
         dispatch(setMessageNew(msgObj));
       }
     });
+  };
+
+  const loadMoreMessages = () => {
+    const lastMesgId = messages[messages.length - 1]?.id;
+
+    if (lastMesgId) {
+      currentRef
+        .endAt(lastMesgId)
+        .orderByKey()
+        .limitToLast(15)
+        .once('value', snapshot => {
+          if (snapshot.exists()) {
+            let msgArr = [];
+            snapshot.forEach(snap => {
+              msgArr.unshift({
+                body: snap?.child('body').val(),
+                dateTime: snap?.child('dateTime').val(),
+                senderId: snap?.child('senderId').val(),
+                sender: snap?.child('sender').val(),
+                type: snap?.child('type').val(),
+                id: snap?.key,
+              });
+            });
+            dispatch(setPagination(msgArr));
+          }
+        });
+    }
   };
 
   return (
@@ -136,7 +212,7 @@ const ChatScreen = ({route, navigation}) => {
       <ChatHeader
         username={name}
         userImage={profileImage}
-        navigation={() => navigation.navigate('InboxScreen')}
+        navigation={() => navigation.navigate('Home')}
       />
 
       <ImageBackground source={img} resizeMode="cover" style={{flex: 1}}>
@@ -144,6 +220,14 @@ const ChatScreen = ({route, navigation}) => {
           style={styles.chatSection}
           data={messages}
           inverted
+          onEndReachedThreshold={0.5}
+          initialNumToRender={15}
+          removeClippedSubviews={true}
+          updateCellsBatchingPeriod={100}
+          keyExtractor={item => item?.id ?? ''}
+          onEndReached={() => {
+            if (messages.length >= 15) loadMoreMessages();
+          }}
           renderItem={({item, index}) => {
             return (
               <View
@@ -160,7 +244,15 @@ const ChatScreen = ({route, navigation}) => {
                   ]}>
                   {item.body}
                 </Text>
-                <Text style={{ fontSize:12, color: userId === item.senderId ? 'white' : 'black'}}>{DateUtil.getInstance().formatApiDateToAppOnlyTimeFirebase(item.dateTime)}</Text>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: userId === item.senderId ? 'white' : 'black',
+                  }}>
+                  {DateUtil.getInstance().formatApiDateToAppOnlyTimeFirebase(
+                    item.dateTime,
+                  )}
+                </Text>
               </View>
             );
           }}></FlatList>
@@ -188,7 +280,7 @@ const ChatScreen = ({route, navigation}) => {
                 onContentSizeChange={e =>
                   setTextInputHeight(e.nativeEvent.contentSize.height)
                 }
-                placeholder="Write your message"
+                placeholder="Type message"
                 style={styles.input}
               />
             </View>

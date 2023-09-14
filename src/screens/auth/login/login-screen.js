@@ -12,15 +12,28 @@ import CustomInputs from '../../../components/CustomInputs';
 import CustomButton from '../../../components/CustomButton';
 import auth from '@react-native-firebase/auth';
 import {useDispatch} from 'react-redux';
-import {setUserData} from '../../../redux/slices/auth/auth-slice';
+import {setApiUserId, setAuthToken, setUserData} from '../../../redux/slices/auth/auth-slice';
 import styles from './style';
+import {login} from '@services/api-services';
 
 const LoginScreen = ({navigation}) => {
   const dispatch = useDispatch();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('zk82729@gmail.com');
+  const [password, setPassword] = useState('Zahid#987');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleApiResponse = async (user) => {
+    try {
+      const data = await login(user, password);
+      if (data?.message == 'User is logged in.') {
+        dispatch(setAuthToken(data?.token));
+        dispatch(setApiUserId(data?.user?._id));
+      }
+    } catch (error) {
+      console.error('Error handling API response:', error);
+    }
+  };
 
   const handleLogin = () => {
     let valid = true;
@@ -37,6 +50,7 @@ const LoginScreen = ({navigation}) => {
       auth()
         .signInWithEmailAndPassword(email, password)
         .then(user => {
+          handleApiResponse(user);
           const userRef = database().ref(`users/${user?.user?.uid}`);
           userRef.once('value', snapshot => {
             const data = {
@@ -47,7 +61,6 @@ const LoginScreen = ({navigation}) => {
             };
             dispatch(setUserData(data));
             setIsLoading(false);
-            navigation.navigate('HomeScreen');
             setEmail('');
             setPassword('');
           });
@@ -76,7 +89,7 @@ const LoginScreen = ({navigation}) => {
         style={styles.container}>
         <View style={styles.headerContainer}>
           <Image
-            source={require('../../../assets/images/unnamed.png')}
+            source={require('../../../assets/images/logo.png')}
             style={styles.logoImg}
           />
         </View>
@@ -117,7 +130,7 @@ const LoginScreen = ({navigation}) => {
             <Text style={styles.newUserText}>Are you a new user? </Text>
             <Text
               style={styles.signupLinkText}
-              onPress={() => navigation.navigate('SignupScreen')}>
+              onPress={() => navigation.navigate('Signup')}>
               Sign Up
             </Text>
           </View>
@@ -132,6 +145,6 @@ const LoginScreen = ({navigation}) => {
       )}
     </KeyboardAvoidingView>
   );
-}
+};
 
 export default LoginScreen;

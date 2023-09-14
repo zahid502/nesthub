@@ -1,14 +1,6 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
-import React, { useState } from 'react';
+import {View, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
+import React, {useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
-
 
 const CustomInputs = ({
   placeholder,
@@ -18,9 +10,6 @@ const CustomInputs = ({
   keyboardType,
   iconName,
   inputMode,
-  k
-
-
 }) => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
 
@@ -29,32 +18,30 @@ const CustomInputs = ({
   };
   return (
     <View style={styles.inputContainer}>
-
       <View style={styles.labelContainer}>
-
-        <Ionicons name={iconName} size={22} style={styles.icons} color={"#3C73E9"} />
-
+        <Ionicons
+          name={iconName}
+          size={22}
+          style={styles.icons}
+          color={'#3C73E9'}
+        />
       </View>
-
-
       <View style={styles.inputs}>
         <TextInput
-        style={{fontSize: 16}}
+          style={{fontSize: 16}}
           placeholder={placeholder}
           value={value}
           onChangeText={onChangeText}
           keyboardType={keyboardType}
           secureTextEntry={secureTextEntry && !isPasswordVisible}
           inputMode={inputMode}
-          
+          autoCapitalize="none"
         />
       </View>
 
-
-
       {secureTextEntry && (
         <TouchableOpacity
-          style={{ justifyContent: 'center' }}
+          style={{justifyContent: 'center'}}
           onPress={togglePasswordVisibility}>
           <Ionicons
             name={isPasswordVisible ? 'eye' : 'eye-off'}
@@ -69,30 +56,24 @@ const CustomInputs = ({
 
 const styles = StyleSheet.create({
   inputContainer: {
-    // backgroundColor: 'green',
     flexDirection: 'row',
     paddingHorizontal: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     borderWidth: 1,
     marginBottom: 10,
-    borderColor :'#3C73E9',
-    height : 50,
+    borderColor: '#3C73E9',
+    height: 50,
   },
   inputs: {
-    // backgroundColor: 'pink',
     flex: 1,
-    justifyContent : 'center',
-    paddingHorizontal :10,
-    
+    justifyContent: 'center',
+    paddingHorizontal: 10,
   },
   labelContainer: {
-    // backgroundColor: 'red',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
-  icons: {
-    // backgroundColor: 'aqua',
-  },
+  icons: {},
 });
 
 export default CustomInputs;
