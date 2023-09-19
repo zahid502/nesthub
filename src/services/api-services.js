@@ -1,8 +1,9 @@
 import axios from 'axios';
 import {Platform} from 'react-native';
-import SessionService from './session-service'
+import SessionService from './session-service';
 
-export const baseUrl="https://us-central1-telecare2-824e0.cloudfunctions.net/myFunction/api/"
+export const baseUrl =
+  'https://us-central1-telecare2-824e0.cloudfunctions.net/myFunction/api/';
 
 export const login = async (user, password) => {
   try {
@@ -38,7 +39,7 @@ export const signup = async (user, name, password) => {
         deviceType: Platform.OS,
       },
     });
-    return res
+    return res;
   } catch (error) {
     console.error('Error occurred during signup:', error);
     return error;
@@ -64,7 +65,7 @@ export const verifyOtp = async (email, otp) => {
 };
 
 //................................................................
-export const resendOtp = async (email) => {
+export const resendOtp = async email => {
   try {
     let response = await axios({
       method: 'POST',
@@ -81,7 +82,7 @@ export const resendOtp = async (email) => {
 };
 
 //................................................................
-export const addPost = async (token, autherId, title, content) => {
+export const addPostItem = async (token, autherId, title, content) => {
   try {
     const apiUrl = `${baseUrl}createPost`;
     const headers = {
@@ -213,7 +214,6 @@ export const fetchAllUsers = async (token, userApiId) => {
         headers,
       })
       .then(responseData => {
-        console.log(responseData?.data, 'all users api response');
         return responseData?.data?.data;
       })
       .catch(err => {
@@ -221,7 +221,7 @@ export const fetchAllUsers = async (token, userApiId) => {
       });
     return res;
   } catch (error) {
-    console.error('Error:...contacts', error);
+    console.error('Error:...all users', error);
   }
 };
 
@@ -252,5 +252,130 @@ export const likePost = async (token, authorId, postId, likeType) => {
     return res;
   } catch (error) {
     console.error('Error:...like post', error);
+  }
+};
+
+//................................................................
+export const fetchfriendsList = async (token, myId) => {
+  try {
+    const apiUrl = `${baseUrl}friendList`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    };
+
+    const data = {
+      myId: myId,
+    };
+    const res = await axios
+      .post(apiUrl, data, {
+        headers,
+      })
+      .then(responseData => {
+        return responseData?.data?.data;
+      })
+      .catch(err => {
+        console.log(err, 'err');
+      });
+    return res;
+  } catch (error) {
+    console.error('Error:... friends List', error);
+  }
+};
+
+//................................................................
+export const friendRequest = async (token, myId, isMyReq) => {
+  // isMyReq: true means i have sent the request
+  // isMyReq: false means i have received the request
+  try {
+    const apiUrl = `${baseUrl}friendReqs`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    };
+
+    const data = {
+      myId: myId,
+      isMyReq: isMyReq.toString(),
+    };
+    const res = await axios
+      .post(apiUrl, data, {
+        headers,
+      })
+      .then(responseData => {
+        return responseData?.data;
+      })
+      .catch(err => {
+        console.log(err, 'err');
+      });
+    return res;
+  } catch (error) {
+    console.error('Error:... friend Request', error);
+  }
+};
+
+//................................................................
+export const reactFriendRequest = async (
+  token,
+  myId,
+  friendReqId,
+  reaction,
+  friendId,
+) => {
+  try {
+    const apiUrl = `${baseUrl}reactFriendReq`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    };
+
+    const data = {
+      myId: myId,
+      friendReqId: friendReqId,
+      reaction: reaction,
+      friendId: friendId,
+    };
+    const res = await axios
+      .post(apiUrl, data, {
+        headers,
+      })
+      .then(responseData => {
+        return responseData?.data;
+      })
+      .catch(err => {
+        console.log(err, 'err');
+      });
+    return res;
+  } catch (error) {
+    console.error('Error:... react Friend Request', error);
+  }
+};
+
+//................................................................
+export const addFriendRequest = async (token, myId, friendId) => {
+  try {
+    const apiUrl = `${baseUrl}addFriendReq`;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    };
+
+    const data = {
+      myId: myId,
+      friendId: friendId,
+    };
+    const res = await axios
+      .post(apiUrl, data, {
+        headers,
+      })
+      .then(responseData => {
+        return responseData?.data;
+      })
+      .catch(err => {
+        console.log(err, 'err');
+      });
+    return res;
+  } catch (error) {
+    console.error('Error:... add Friend Request', error);
   }
 };

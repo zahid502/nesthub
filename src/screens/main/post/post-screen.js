@@ -22,7 +22,11 @@ import {
   likePost,
 } from '@services/api-services';
 import {useDispatch, useSelector} from 'react-redux';
-import {setComments, setPosts} from '@redux/slices/posts/posts-slice';
+import {
+  removePost,
+  setComments,
+  setPosts,
+} from '@redux/slices/posts/posts-slice';
 import {DateUtil} from '@app-utils/date-util';
 import {NumberUtil} from '@app-utils/number-util';
 import RBSheet from 'react-native-raw-bottom-sheet';
@@ -144,33 +148,35 @@ const PostScreen = ({navigation}) => {
     },
   ]);
 
-  const handleLikeReaction = imageId => {
+  const handleLikeReaction = (authorId, postId, imageId) => {
     setSelectedImage(imageId === selectedImage ? null : imageId);
+    likePosts(authorId, postId, imageId);
+    setShowLikeView(false);
   };
 
-  const renderLikeItem = (item, post) => {
+  const removePostItem = item => {
+    dispatch(removePost(item));
+  };
+
+  const renderLikeItem = ({item}, post) => {
     return (
       <View
-        key={item?.item?.id}
+        key={item?.id}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           marginHorizontal: 10,
         }}>
         <TouchableOpacity
-          onPress={() => {
-            handleLikeReaction(item?.item?.id),
-              setShowLikeView(false),
-              likePosts(post?.author, post?._id, item?.item?.id);
-          }}>
+          onPress={() => handleLikeReaction(post?.author, post?._id, item?.id)}>
           <Image
-            source={{uri: item?.item?.img}}
+            source={{uri: item?.img}}
             style={{width: 30, height: 30, resizeMode: 'contain'}}
             onError={() => console.log(`Error loading ${item.id} GIF`)}
           />
         </TouchableOpacity>
         {/* <Text style={{marginLeft: 8}}>
-          {selectedImage === item?.item?.id ? 'Reacted' : item?.item?.description}
+          {selectedImage === item?.id ? 'Reacted' : item?.description}
         </Text> */}
       </View>
     );
@@ -250,7 +256,9 @@ const PostScreen = ({navigation}) => {
                 size={18}
                 color={'gray'}
               />
-              <AntDesign name="close" size={23} color={'gray'} />
+              <TouchableOpacity onPress={() => removePostItem(post)}>
+                <AntDesign name="close" size={23} color={'gray'} />
+              </TouchableOpacity>
             </View>
           </View>
           <View style={{paddingTop: 15, paddingBottom: 10}}>
@@ -410,8 +418,10 @@ const PostScreen = ({navigation}) => {
               backgroundColor: '#000',
             },
             container: {
-              backgroundColor:'rgba(232, 229, 231, 0.97)', borderWidth:0.5, borderRadius:10
-            }
+              backgroundColor: 'rgba(232, 229, 231, 0.97)',
+              borderWidth: 0.5,
+              borderRadius: 10,
+            },
           }}>
           <View
             style={{
@@ -468,7 +478,7 @@ const PostScreen = ({navigation}) => {
         <FlatList
           bounces={false}
           showsVerticalScrollIndicator={false}
-          data={[...posts].reverse()}
+          data={[...posts]?.reverse()}
           contentContainerStyle={{
             overflow: 'hidden',
             backgroundColor: 'white',

@@ -50,7 +50,7 @@ const Search: React.FC<ISearchProps> = ({
       />
         <TextInput
           defaultValue={value}
-          autoFocus={screenName === 'SearchScreen' ? true : false}
+          autoFocus={screenName === 'Search' ? true : false}
           style={styles.input}
           placeholder={placeholder}
           onChangeText={onChangeText}

@@ -1,48 +1,62 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  Image,
-} from 'react-native';
-import React, {useState} from 'react';
+import {View, Text, TouchableOpacity, FlatList, Image} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Search from '@components/search';
+import {fetchfriendsList} from '@services/api-services';
+import {setFriendsList} from '@redux/slices/friends/friends-slice';
+import {useDispatch, useSelector} from 'react-redux';
+import {SearchUtil} from '@app-utils/search-util';
+import RBSheet from 'react-native-raw-bottom-sheet';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const YourFriendsScreen = ({navigation}) => {
+  const {authToken, apiUserId} = useSelector(state => state.auth);
+  const {friendsList} = useSelector(state => state.friends);
+  const dispatch = useDispatch();
+  const searchUtil = SearchUtil.getInstance();
+  const refRBSheet = useRef();
+  const [item, setItem] = useState({});
+  const [searchedData, setSearchedData] = useState([]);
   const [searchText, setSearchText] = useState('');
 
   let profile1 = require('../../../assets/images/profile1.png');
-  let profile2 = require('../../../assets/images/profile2.png');
-  const suggestedFriends = [
-    {name: 'John Ch', img: profile1},
-    {name: 'Ali Khan', img: profile2},
-    {name: 'Ayesha Khan', img: profile1},
-    {name: 'Maha Khan', img: profile2},
-    {name: 'Saba Khan', img: profile1},
-    {name: 'Kamran Khan', img: profile2},
-    {name: 'Mohsin Khan', img: profile1},
-    {name: 'Kaleem Khan', img: profile2},
-    {name: 'Zeeshan Khan', img: profile1},
-    {name: 'Shoiab Khan', img: profile2},
-    {name: 'Zoha Khan', img: profile1},
-    {name: 'Alyia Khan', img: profile2},
-    {name: 'Nimra Khan', img: profile1},
-    {name: 'Fasil Khan', img: profile2},
-    {name: 'Jameel Khan', img: profile1},
-  ];
+
+  useEffect(() => {
+    fetchfriends();
+  }, []);
+
+  const fetchfriends = async () => {
+    let data = await fetchfriendsList(authToken, apiUserId);
+    if (data?.length > 0) {
+      dispatch(setFriendsList(data));
+    }
+  };
 
   const searchQuery = search => {
     setSearchText(search);
+    const searchedData = searchUtil.searchItem(search, friendsList);
+
+    if (searchedData) {
+      setSearchedData(searchedData);
+    }
   };
 
   const onBackArrowPress = () => {
     navigation.goBack();
   };
 
-  const renderSuggestedItem = ({item}) => {
+  const onOptionPress = item => {
+    setItem(item);
+    refRBSheet.current.open(), console.log('item...', item);
+  };
+
+  const onSearchPress = () => {
+    navigation.navigate('Search');
+  };
+
+  const renderFriendsItem = ({item}) => {
     return (
       <View
         style={{
@@ -65,7 +79,7 @@ const YourFriendsScreen = ({navigation}) => {
               borderRadius: 100,
               resizeMode: 'cover',
             }}
-            source={item.img}
+            source={profile1}
           />
         </View>
         <View
@@ -88,7 +102,8 @@ const YourFriendsScreen = ({navigation}) => {
             style={{
               alignItems: 'center',
               paddingRight: 5,
-            }}>
+            }}
+            onPress={() => onOptionPress(item)}>
             <SimpleLineIcons name="options" size={18} color={'gray'} />
           </TouchableOpacity>
         </View>
@@ -114,7 +129,9 @@ const YourFriendsScreen = ({navigation}) => {
           </TouchableOpacity>
           <Text style={{paddingLeft: 10, fontSize: 18}}>Your friends</Text>
         </View>
-        <FontAwesome5 name="search" size={23} color={'black'} />
+        <TouchableOpacity onPress={onSearchPress}>
+          <FontAwesome5 name="search" size={23} color={'black'} />
+        </TouchableOpacity>
       </View>
       <Search
         style={{
@@ -128,19 +145,191 @@ const YourFriendsScreen = ({navigation}) => {
         <FlatList
           showsVerticalScrollIndicator={false}
           bounces={false}
-          data={suggestedFriends}
+          data={searchText ? searchedData : friendsList}
           contentContainerStyle={{
             overflow: 'hidden',
             paddingBottom: 20,
           }}
           onEndReached={() => {}}
           keyboardDismissMode={'on-drag'}
-          renderItem={renderSuggestedItem}
+          renderItem={renderFriendsItem}
           onEndReachedThreshold={0}
           initialNumToRender={20}
           maxToRenderPerBatch={20}
           updateCellsBatchingPeriod={100}
         />
+        <RBSheet
+          ref={refRBSheet}
+          closeOnDragDown={true}
+          closeOnPressMask={true}
+          onClose={() => {}}
+          dragFromTopOnly={true}
+          height={400}
+          customStyles={{
+            wrapper: {
+              backgroundColor: 'rgba(164, 175, 175, 0.30)',
+            },
+            draggableIcon: {
+              backgroundColor: 'white',
+            },
+            container: {
+              backgroundColor: 'white',
+            },
+          }}>
+          <View style={{paddingHorizontal: 12}}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingBottom: 15,
+              }}>
+              <View
+                style={{
+                  height: 61,
+                  width: 61,
+                  borderWidth: 0.5,
+                  borderRadius: 100,
+                  borderColor: 'gray',
+                }}>
+                <Image
+                  style={{
+                    height: 60,
+                    width: 60,
+                    borderRadius: 100,
+                    resizeMode: 'cover',
+                  }}
+                  source={profile1}
+                />
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'space-between',
+                  paddingLeft: 12,
+                  flexDirection: 'row',
+                }}>
+                <View>
+                  <Text
+                    style={{
+                      fontWeight: '500',
+                      fontSize: 16,
+                      paddingBottom: 5,
+                      paddingLeft: 2,
+                    }}>
+                    {item.name}
+                  </Text>
+                  <Text
+                    style={{
+                      paddingLeft: 2,
+                      color: 'gray',
+                    }}>
+                    {'Friends since September 2023'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          <View
+            style={{
+              borderBottomWidth: 0.4,
+              borderBottomColor: 'gray',
+              marginBottom: 15,
+            }}
+          />
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingBottom: 15,
+              paddingHorizontal: 12,
+            }}>
+            <View
+              style={{
+                height: 61,
+                width: 61,
+                borderWidth: 0.5,
+                borderRadius: 100,
+                borderColor: 'gray',
+              }}>
+              <Image
+                style={{
+                  height: 60,
+                  width: 60,
+                  borderRadius: 100,
+                  resizeMode: 'cover',
+                }}
+                source={profile1}
+              />
+            </View>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'space-between',
+                paddingLeft: 12,
+                flexDirection: 'row',
+              }}>
+              <View>
+                <Text
+                  style={{
+                    fontWeight: '500',
+                    fontSize: 16,
+                    paddingBottom: 5,
+                    paddingLeft: 2,
+                  }}>
+                  {item.name}
+                </Text>
+                <Text
+                  style={{
+                    paddingLeft: 2,
+                    color: 'gray',
+                  }}>
+                  {'Friends since September 2023'}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingBottom: 15,
+              paddingHorizontal: 12,
+            }}>
+            <MaterialCommunityIcons
+              name="account-remove-outline"
+              size={40}
+              color={'red'}
+              style={{transform: [{scaleX: -1}]}}
+            />
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'space-between',
+                paddingLeft: 12,
+                flexDirection: 'row',
+              }}>
+              <View>
+                <Text
+                  style={{
+                    fontWeight: '500',
+                    fontSize: 16,
+                    paddingBottom: 5,
+                    paddingLeft: 2,
+                    color: 'red',
+                  }}>
+                  {`Unfriend ${item?.name}`}
+                </Text>
+                <Text
+                  style={{
+                    paddingLeft: 2,
+                    color: 'gray',
+                  }}>
+                  {`Remove ${item?.name} as a friend`}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </RBSheet>
       </View>
     </View>
   );

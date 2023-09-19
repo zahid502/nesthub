@@ -1,34 +1,58 @@
 import {View, Text, TouchableOpacity, FlatList, Image} from 'react-native';
-import React from 'react';
+import React, {useEffect} from 'react';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {DrawerToolbar} from '@components';
+import {addFriendRequest, fetchAllUsers} from '@services/api-services';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  removeSuggestedFriends,
+  setSuggestedFriends,
+} from '@redux/slices/friends/friends-slice';
+import Devider from '@components/devider';
 
 const FriendsScreen = ({navigation}) => {
-  let profile1 = require('../../../assets/images/profile1.png');
+  const {apiUserId, authToken} = useSelector(state => state.auth);
+  const {suggestedFriends} = useSelector(state => state.friends);
+  const dispatch = useDispatch();
+
   let profile2 = require('../../../assets/images/profile2.png');
-  const suggestedFriends = [
-    {name: 'John Ch', img: profile1},
-    {name: 'Ali Khan', img: profile2},
-    {name: 'Ayesha Khan', img: profile1},
-    {name: 'Maha Khan', img: profile2},
-    {name: 'Saba Khan', img: profile1},
-    {name: 'Kamran Khan', img: profile2},
-    {name: 'Mohsin Khan', img: profile1},
-    {name: 'Kaleem Khan', img: profile2},
-    {name: 'Zeeshan Khan', img: profile1},
-    {name: 'Shoiab Khan', img: profile2},
-    {name: 'Zoha Khan', img: profile1},
-    {name: 'Alyia Khan', img: profile2},
-    {name: 'Nimra Khan', img: profile1},
-    {name: 'Fasil Khan', img: profile2},
-    {name: 'Jameel Khan', img: profile1},
-  ];
 
-  const yourFriends=()=>{
-    navigation.navigate('YourFriends')
-  }
+  useEffect(() => {
+    fetchfriends();
+  }, []);
 
-  const renderSuggestedItemHeader = () => {
+  const fetchfriends = async () => {
+    let data = await fetchAllUsers(authToken, apiUserId);
+    if (data?.length > 0) {
+      dispatch(setSuggestedFriends(data));
+    }
+  };
+
+  const addFriend = async item => {
+    dispatch(removeSuggestedFriends(item));
+    let data = await addFriendRequest(authToken, apiUserId, item?._id);
+    if (data?.length > 0) {
+      // console.log('data...', data);
+    }
+  };
+
+  const removeFriend = async item => {
+    dispatch(removeSuggestedFriends(item));
+  };
+
+  const yourFriends = () => {
+    navigation.navigate('YourFriends');
+  };
+
+  const friendsRequest = () => {
+    navigation.navigate('FriendRequest');
+  };
+
+  const onSearchPress = () => {
+    navigation.navigate('Search');
+  };
+
+  const renderSuggestedFriendsHeader = () => {
     return (
       <>
         <View
@@ -38,7 +62,7 @@ const FriendsScreen = ({navigation}) => {
           }}>
           <TouchableOpacity
             activeOpacity={0.5}
-            onPress={() => {}}
+            onPress={friendsRequest}
             style={{
               padding: 10,
               backgroundColor: '#d6d6d6',
@@ -54,10 +78,8 @@ const FriendsScreen = ({navigation}) => {
             <Text style={{fontWeight: '500'}}>Your friends</Text>
           </TouchableOpacity>
         </View>
-        <View
+        <Devider
           style={{
-            borderBottomWidth: 0.4,
-            borderBottomColor: 'gray',
             marginVertical: 15,
           }}
         />
@@ -69,7 +91,8 @@ const FriendsScreen = ({navigation}) => {
       </>
     );
   };
-  const renderSuggestedItem = ({item}) => {
+
+  const renderSuggestedFriendsItem = ({item}) => {
     return (
       <View
         style={{
@@ -92,7 +115,7 @@ const FriendsScreen = ({navigation}) => {
               borderRadius: 100,
               resizeMode: 'cover',
             }}
-            source={item.img}
+            source={profile2}
           />
         </View>
         <View style={{flex: 1, justifyContent: 'center', paddingLeft: 10}}>
@@ -118,7 +141,8 @@ const FriendsScreen = ({navigation}) => {
                 borderRadius: 10,
                 width: '47%',
                 marginRight: 10,
-              }}>
+              }}
+              onPress={() => addFriend(item)}>
               <Text style={{color: 'white', fontSize: 16, fontWeight: '600'}}>
                 Add Friend
               </Text>
@@ -130,7 +154,8 @@ const FriendsScreen = ({navigation}) => {
                 alignItems: 'center',
                 borderRadius: 10,
                 width: '47%',
-              }}>
+              }}
+              onPress={() => removeFriend(item)}>
               <Text style={{fontSize: 16, fontWeight: '600'}}>Remove</Text>
             </TouchableOpacity>
           </View>
@@ -153,12 +178,12 @@ const FriendsScreen = ({navigation}) => {
           <Text style={{fontSize: 32}}>Friends</Text>
           <TouchableOpacity
             activeOpacity={0.5}
-            onPress={() => {}}
             style={{
               padding: 5,
               backgroundColor: '#d6d6d6',
               borderRadius: 100,
-            }}>
+            }}
+            onPress={onSearchPress}>
             <FontAwesome5 name="search" size={20} color={'black'} />
           </TouchableOpacity>
         </View>
@@ -172,8 +197,8 @@ const FriendsScreen = ({navigation}) => {
           }}
           onEndReached={() => {}}
           keyboardDismissMode={'on-drag'}
-          ListHeaderComponent={renderSuggestedItemHeader}
-          renderItem={renderSuggestedItem}
+          ListHeaderComponent={renderSuggestedFriendsHeader}
+          renderItem={renderSuggestedFriendsItem}
           onEndReachedThreshold={0}
           initialNumToRender={20}
           maxToRenderPerBatch={20}

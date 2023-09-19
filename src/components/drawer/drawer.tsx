@@ -8,11 +8,15 @@ import {DrawerItem} from '@react-navigation/drawer';
 import {DrawerNavigationHelpers} from '@react-navigation/drawer/lib/typescript/src/types';
 import {Text, TouchableOpacity, View} from 'react-native';
 import {useTheme} from '@hooks/use-theme';
-import {setApiUserId, setAuthToken, setUserData} from '@redux/slices/auth/auth-slice';
+import {
+  setApiUserId,
+  setAuthToken,
+  setUserData,
+} from '@redux/slices/auth/auth-slice';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useDispatch} from 'react-redux';
-import { DrawerActions } from '@react-navigation/native';
+import {DrawerActions} from '@react-navigation/native';
 
 //-----------------------------
 interface IDrawerContentProps {
@@ -32,7 +36,7 @@ const Drawer: React.FC<IDrawerContentProps> = ({
   const dispatch = useDispatch();
 
   const logout = () => {
-    navigation?.dispatch(DrawerActions.closeDrawer())
+    navigation?.dispatch(DrawerActions.closeDrawer());
     console.log('Logout successfully');
     dispatch(setUserData(''));
     dispatch(setAuthToken(''));

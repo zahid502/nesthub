@@ -124,6 +124,7 @@ const InboxScreen = ({navigation}) => {
     console.log('Logout successfully');
     dispatch(setUserData(''));
     dispatch(setAuthToken(''));
+    navigation.closeDrawer();
   };
 
   return (

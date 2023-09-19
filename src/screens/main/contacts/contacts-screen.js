@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  FlatList,
-} from 'react-native';
+import {View, Text, Image, TouchableOpacity, FlatList} from 'react-native';
 import React, {useState, useEffect} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -62,11 +56,7 @@ const ContactsScreen = ({navigation}) => {
               <Feather name="search" size={20} color={'white'} />
             </TouchableOpacity>
             <TouchableOpacity style={{flex: 1, alignItems: 'center'}}>
-              <Entypo
-                name="dots-three-vertical"
-                size={20}
-                color={'white'}
-              />
+              <Entypo name="dots-three-vertical" size={20} color={'white'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -82,7 +72,7 @@ const ContactsScreen = ({navigation}) => {
                 <TouchableOpacity
                   style={styles.chatContainer}
                   onPress={() =>
-                    navigation.navigate('ChatScreen', {
+                    navigation.navigate('Chat', {
                       uid: item.uid,
                       profileImage: item.profileImage,
                       name: item.name,

@@ -7,6 +7,7 @@ import inboxSlice from './slices/inbox/inbox-slice';
 import bottomTabReducer from './slices/bottomTab/bottomTab-slice';
 import postsSlice from './slices/posts/posts-slice';
 import contactsSlice from './slices/contacts/contacts-slice';
+import friendsSlice from './slices/friends/friends-slice';
 
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -15,12 +16,13 @@ const rootReducer = combineReducers({
   contacts: contactsSlice,
   posts: postsSlice,
   bottom: bottomTabReducer,
+  friends: friendsSlice,
 });
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: ['inbox', 'chat', 'bottom'],
+  blacklist: ['inbox', 'chat', 'bottom', 'friends', 'posts'],
 };
 
 const store = configureStore({
@@ -39,4 +41,3 @@ export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;
 
 export default {store, persistor};
-

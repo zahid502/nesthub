@@ -4,7 +4,8 @@ import {DrawerToolbar} from '@components';
 
 import {useDispatch, useSelector} from 'react-redux';
 import CustomInputs from '@components/CustomInputs';
-import {addPost} from '@services/api-services';
+import {addPostItem} from '@services/api-services';
+import {addPost} from '@redux/slices/posts/posts-slice';
 
 const CreatePostScreen = ({navigation}) => {
   const dispatch = useDispatch();
@@ -15,10 +16,13 @@ const CreatePostScreen = ({navigation}) => {
   const createPost = async () => {
     if (title?.trim() === '') return;
     try {
-      const data = await addPost(authToken, apiUserId, title, content);
-      navigation.navigate('Posts')
-      setContent('');
-      setTitle('');
+      const data = await addPostItem(authToken, apiUserId, title, content);
+      if (data?.post) {
+        navigation.goBack();
+        dispatch(addPost(data?.post));
+        setContent('');
+        setTitle('');
+      }
     } catch (error) {
       console.error('Error handling create post API response:', error);
     }

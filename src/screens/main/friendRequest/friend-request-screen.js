@@ -1,71 +1,68 @@
 import {View, Text, TouchableOpacity, FlatList, Image} from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import {DrawerToolbar} from '@components';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import {friendRequest, reactFriendRequest} from '@services/api-services';
+import {
+  setFriendRequestsTo,
+  setFriendRequestsFrom,
+  removeFriendRequestFrom,
+} from '@redux/slices/friends/friends-slice';
+import {useDispatch, useSelector} from 'react-redux';
+import Search from '@components/search';
+import {SearchUtil} from '@app-utils/search-util';
 
-const FriendRequestScreen = () => {
+const FriendRequestScreen = ({navigation}) => {
+  const {apiUserId, authToken} = useSelector(state => state.auth);
+  const {friendRequestsFrom} = useSelector(state => state.friends);
+  const searchUtil = SearchUtil.getInstance();
+  const dispatch = useDispatch();
+  const [searchText, setSearchText] = useState('');
+  const [searchedData, setSearchedData] = useState([]);
+
   let profile1 = require('../../../assets/images/profile1.png');
-  let profile2 = require('../../../assets/images/profile2.png');
-  const suggestedFriends = [
-    {name: 'John Ch', img: profile1},
-    {name: 'Ali Khan', img: profile2},
-    {name: 'Ayesha Khan', img: profile1},
-    {name: 'Maha Khan', img: profile2},
-    {name: 'Saba Khan', img: profile1},
-    {name: 'Kamran Khan', img: profile2},
-    {name: 'Mohsin Khan', img: profile1},
-    {name: 'Kaleem Khan', img: profile2},
-    {name: 'Zeeshan Khan', img: profile1},
-    {name: 'Shoiab Khan', img: profile2},
-    {name: 'Zoha Khan', img: profile1},
-    {name: 'Alyia Khan', img: profile2},
-    {name: 'Nimra Khan', img: profile1},
-    {name: 'Fasil Khan', img: profile2},
-    {name: 'Jameel Khan', img: profile1},
-  ];
 
-  const renderSuggestedItemHeader = () => {
-    return (
-      <>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}>
-          <TouchableOpacity
-            activeOpacity={0.5}
-            onPress={() => {}}
-            style={{
-              padding: 10,
-              backgroundColor: '#d6d6d6',
-              borderRadius: 18,
-              marginRight: 10,
-            }}>
-            <Text style={{fontWeight: '500'}}>Friend requests</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.5}
-            onPress={() => {}}
-            style={{padding: 10, backgroundColor: '#d6d6d6', borderRadius: 18}}>
-            <Text style={{fontWeight: '500'}}>Your friends</Text>
-          </TouchableOpacity>
-        </View>
-        <View
-          style={{
-            borderBottomWidth: 0.4,
-            borderBottomColor: 'gray',
-            marginVertical: 15,
-          }}
-        />
-        <View>
-          <Text style={{fontSize: 22, fontWeight: '700', paddingBottom: 20}}>
-            People Yau May Know
-          </Text>
-        </View>
-      </>
-    );
+  useEffect(() => {
+    fetchfriends();
+  }, []);
+
+  const fetchfriends = async () => {
+    let data = await friendRequest(authToken, apiUserId, true);
+    if (data?.message === 'Success.') {
+      dispatch(setFriendRequestsFrom(data?.data));
+    }
   };
-  const renderSuggestedItem = ({item}) => {
+
+  const reactFriendReq = async (item, reaction) => {
+    dispatch(removeFriendRequestFrom(item));
+    // console.log("item...",item);
+    // myId, friendReqId, reaction, friendId
+
+    // let data = await reactFriendRequest(authToken, apiUserId, reaction, "friendId");
+    // console.log('reactFriendRequest... data', data);
+    // if (data?.message === 'Success.') {
+    //   dispatch(setFriendRequests(data?.data));
+    // }
+  };
+
+  const searchQuery = search => {
+    setSearchText(search);
+    const searchedData = searchUtil.searchItem(search, friendRequestsFrom);
+
+    if (searchedData) {
+      setSearchedData(searchedData);
+    }
+  };
+
+  const onBackArrowPress = () => {
+    navigation.goBack();
+  };
+
+  const onSearchPress = () => {
+    navigation.navigate('Search');
+  };
+
+  const renderFriendRequestsItem = ({item}) => {
     return (
       <View
         style={{
@@ -88,7 +85,7 @@ const FriendRequestScreen = () => {
               borderRadius: 100,
               resizeMode: 'cover',
             }}
-            source={item.img}
+            source={profile1}
           />
         </View>
         <View style={{flex: 1, justifyContent: 'center', paddingLeft: 10}}>
@@ -99,7 +96,7 @@ const FriendRequestScreen = () => {
               paddingBottom: 5,
               paddingLeft: 2,
             }}>
-            {item.name}
+            {'Muhammad Zahid'}
           </Text>
           <View
             style={{
@@ -114,9 +111,10 @@ const FriendRequestScreen = () => {
                 borderRadius: 10,
                 width: '47%',
                 marginRight: 10,
-              }}>
+              }}
+              onPress={() => reactFriendReq(item, 'accept')}>
               <Text style={{color: 'white', fontSize: 16, fontWeight: '600'}}>
-                Add Friend
+                Confirm
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -126,8 +124,9 @@ const FriendRequestScreen = () => {
                 alignItems: 'center',
                 borderRadius: 10,
                 width: '47%',
-              }}>
-              <Text style={{fontSize: 16, fontWeight: '600'}}>Remove</Text>
+              }}
+              onPress={() => reactFriendReq(item, 'reject')}>
+              <Text style={{fontSize: 16, fontWeight: '600'}}>Delete</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -137,44 +136,58 @@ const FriendRequestScreen = () => {
 
   return (
     <>
-      <DrawerToolbar name={'Friends'} />
-      <View style={{flex: 1, backgroundColor: 'white', padding: 10}}>
+      <View style={{flex: 1, backgroundColor: 'white'}}>
         <View
           style={{
-            justifyContent: 'space-between',
             flexDirection: 'row',
             alignItems: 'center',
-            paddingBottom: 10,
+            justifyContent: 'space-between',
+            padding: 12,
+            borderBottomWidth: 0.4,
+            borderBlockColor: 'gray',
+            backgroundColor: 'white',
           }}>
-          <Text style={{fontSize: 32}}>Friends</Text>
-          <TouchableOpacity
-            activeOpacity={0.5}
-            onPress={() => {}}
-            style={{
-              padding: 5,
-              backgroundColor: '#d6d6d6',
-              borderRadius: 100,
-            }}>
-            <FontAwesome5 name="search" size={20} color={'black'} />
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <TouchableOpacity activeOpacity={0.5} onPress={onBackArrowPress}>
+              <AntDesign name="arrowleft" size={30} color={'black'} />
+            </TouchableOpacity>
+            <Text style={{paddingLeft: 10, fontSize: 18}}>Friend Requests</Text>
+          </View>
+          <TouchableOpacity onPress={onSearchPress}>
+          <FontAwesome5 name="search" size={23} color={'black'} />
           </TouchableOpacity>
         </View>
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-          data={suggestedFriends}
-          contentContainerStyle={{
-            overflow: 'hidden',
-            paddingBottom: 90,
+        <Search
+          style={{
+            borderRadius: 20,
           }}
-          onEndReached={() => {}}
-          keyboardDismissMode={'on-drag'}
-          ListHeaderComponent={renderSuggestedItemHeader}
-          renderItem={renderSuggestedItem}
-          onEndReachedThreshold={0}
-          initialNumToRender={20}
-          maxToRenderPerBatch={20}
-          updateCellsBatchingPeriod={100}
+          value={searchText}
+          onChangeText={searchQuery}
         />
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'white',
+            padding: 10,
+            paddingTop: 7,
+          }}>
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            data={searchText ? searchedData : friendRequestsFrom}
+            contentContainerStyle={{
+              overflow: 'hidden',
+              paddingBottom: 90,
+            }}
+            onEndReached={() => {}}
+            keyboardDismissMode={'on-drag'}
+            renderItem={renderFriendRequestsItem}
+            onEndReachedThreshold={0}
+            initialNumToRender={20}
+            maxToRenderPerBatch={20}
+            updateCellsBatchingPeriod={100}
+          />
+        </View>
       </View>
     </>
   );

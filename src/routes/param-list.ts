@@ -29,6 +29,7 @@ export type MainNavParamList = {
   FriendRequest:undefined;
   YourFriends:undefined;
   Status: undefined;
+  Search: undefined;
 };
 //----------------------------------------------------------------
 export type MainNavigationProp<T extends keyof MainNavParamList> =
