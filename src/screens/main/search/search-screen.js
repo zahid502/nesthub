@@ -2,8 +2,7 @@ import {Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import Search from '@components/search';
-import {Divider} from '@components';
+import {Divider, Search} from '@components';
 
 const SearchScreen = ({navigation}) => {
   return (

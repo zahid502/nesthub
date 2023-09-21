@@ -1,15 +1,12 @@
 import {View, Text, TouchableOpacity, FlatList, Image} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
-import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import Search from '@components/search';
 import {fetchfriendsList} from '@services/api-services';
 import {setFriendsList} from '@redux/slices/friends/friends-slice';
 import {useDispatch, useSelector} from 'react-redux';
 import {SearchUtil} from '@app-utils/search-util';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {FriendsHeaderSearch, YourFriendsItem} from '@components';
 
 const YourFriendsScreen = ({navigation}) => {
   const {authToken, apiUserId} = useSelector(state => state.auth);
@@ -17,11 +14,12 @@ const YourFriendsScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const searchUtil = SearchUtil.getInstance();
   const refRBSheet = useRef();
+
   const [item, setItem] = useState({});
   const [searchedData, setSearchedData] = useState([]);
   const [searchText, setSearchText] = useState('');
 
-  let profile1 = require('../../../assets/images/profile1.png');
+  let user = require('../../../assets/images/profile1.png');
 
   useEffect(() => {
     fetchfriends();
@@ -43,102 +41,40 @@ const YourFriendsScreen = ({navigation}) => {
     }
   };
 
-  const onBackArrowPress = () => {
+  const onBackPress = () => {
     navigation.goBack();
   };
 
   const onOptionPress = item => {
     setItem(item);
-    refRBSheet.current.open(), console.log('item...', item);
+    refRBSheet?.current?.open(), console.log('item...', item);
   };
 
   const onSearchPress = () => {
     navigation.navigate('Search');
   };
 
+  const messageFriend = item => {};
+
+  const unFriend = item => {};
+
   const renderFriendsItem = ({item}) => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingBottom: 15,
-        }}>
-        <View
-          style={{
-            height: 71,
-            width: 71,
-            borderWidth: 0.5,
-            borderRadius: 100,
-            borderColor: 'gray',
-          }}>
-          <Image
-            style={{
-              height: 70,
-              width: 70,
-              borderRadius: 100,
-              resizeMode: 'cover',
-            }}
-            source={profile1}
-          />
-        </View>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'space-between',
-            paddingLeft: 12,
-            flexDirection: 'row',
-          }}>
-          <Text
-            style={{
-              fontWeight: '500',
-              fontSize: 16,
-              paddingBottom: 5,
-              paddingLeft: 2,
-            }}>
-            {item.name}
-          </Text>
-          <TouchableOpacity
-            style={{
-              alignItems: 'center',
-              paddingRight: 5,
-            }}
-            onPress={() => onOptionPress(item)}>
-            <SimpleLineIcons name="options" size={18} color={'gray'} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <YourFriendsItem
+        friend={item}
+        onOptionPress={() => onOptionPress(item)}
+      />
     );
   };
 
   return (
     <View style={{flex: 1, backgroundColor: 'white'}}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: 12,
-          borderBottomWidth: 0.4,
-          borderBlockColor: 'gray',
-          backgroundColor: 'white',
-        }}>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <TouchableOpacity activeOpacity={0.5} onPress={onBackArrowPress}>
-            <AntDesign name="arrowleft" size={30} color={'black'} />
-          </TouchableOpacity>
-          <Text style={{paddingLeft: 10, fontSize: 18}}>Your friends</Text>
-        </View>
-        <TouchableOpacity onPress={onSearchPress}>
-          <FontAwesome5 name="search" size={23} color={'black'} />
-        </TouchableOpacity>
-      </View>
-      <Search
-        style={{
-          borderRadius: 20,
-        }}
-        value={searchText}
-        onChangeText={searchQuery}
+      <FriendsHeaderSearch
+        title="Your friends"
+        searchText={searchText}
+        onBackPress={onBackPress}
+        onSearchPress={onSearchPress}
+        searchQueryFunction={searchQuery}
       />
       <View
         style={{flex: 1, backgroundColor: 'white', padding: 10, paddingTop: 7}}>
@@ -171,6 +107,7 @@ const YourFriendsScreen = ({navigation}) => {
             },
             draggableIcon: {
               backgroundColor: 'white',
+              height: 0,
             },
             container: {
               backgroundColor: 'white',
@@ -198,7 +135,7 @@ const YourFriendsScreen = ({navigation}) => {
                     borderRadius: 100,
                     resizeMode: 'cover',
                   }}
-                  source={profile1}
+                  source={user}
                 />
               </View>
               <View
@@ -216,7 +153,7 @@ const YourFriendsScreen = ({navigation}) => {
                       paddingBottom: 5,
                       paddingLeft: 2,
                     }}>
-                    {item.name}
+                    {item?.name}
                   </Text>
                   <Text
                     style={{
@@ -236,31 +173,19 @@ const YourFriendsScreen = ({navigation}) => {
               marginBottom: 15,
             }}
           />
-          <View
+          <TouchableOpacity
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               paddingBottom: 15,
               paddingHorizontal: 12,
-            }}>
-            <View
-              style={{
-                height: 61,
-                width: 61,
-                borderWidth: 0.5,
-                borderRadius: 100,
-                borderColor: 'gray',
-              }}>
-              <Image
-                style={{
-                  height: 60,
-                  width: 60,
-                  borderRadius: 100,
-                  resizeMode: 'cover',
-                }}
-                source={profile1}
-              />
-            </View>
+            }}
+            onPress={() => messageFriend(item)}>
+            <MaterialCommunityIcons
+              name="android-messages"
+              size={35}
+              style={{transform: [{scaleX: -1}]}}
+            />
             <View
               style={{
                 flex: 1,
@@ -276,28 +201,29 @@ const YourFriendsScreen = ({navigation}) => {
                     paddingBottom: 5,
                     paddingLeft: 2,
                   }}>
-                  {item.name}
+                  {`Message ${item?.name}`}
                 </Text>
                 <Text
                   style={{
                     paddingLeft: 2,
                     color: 'gray',
                   }}>
-                  {'Friends since September 2023'}
+                  {`Remove ${item?.name} as a friend`}
                 </Text>
               </View>
             </View>
-          </View>
-          <View
+          </TouchableOpacity>
+          <TouchableOpacity
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               paddingBottom: 15,
               paddingHorizontal: 12,
-            }}>
+            }}
+            onPress={() => unFriend(item)}>
             <MaterialCommunityIcons
               name="account-remove-outline"
-              size={40}
+              size={35}
               color={'red'}
               style={{transform: [{scaleX: -1}]}}
             />
@@ -328,7 +254,7 @@ const YourFriendsScreen = ({navigation}) => {
                 </Text>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         </RBSheet>
       </View>
     </View>

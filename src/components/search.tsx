@@ -9,10 +9,8 @@ import {
   Platform,
   StyleProp,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
-  View,
   ViewStyle,
 } from 'react-native';
 import Octicons from 'react-native-vector-icons/Octicons';
@@ -40,22 +38,21 @@ const Search: React.FC<ISearchProps> = ({
   return (
     <TouchableOpacity
       activeOpacity={1}
-      onPress={() => {
-      }}
+      onPress={() => {}}
       style={[styles.container, style]}>
       <Octicons
         name={'search'}
         size={theme.dimensions.normalIconSize}
         color={colors.lightGray}
       />
-        <TextInput
-          defaultValue={value}
-          autoFocus={screenName === 'Search' ? true : false}
-          style={styles.input}
-          placeholder={placeholder}
-          onChangeText={onChangeText}
-          placeholderTextColor={theme.color.onSurfaceLight}
-        />
+      <TextInput
+        defaultValue={value}
+        autoFocus={screenName === 'Search' ? true : false}
+        style={styles.input}
+        placeholder={placeholder}
+        onChangeText={onChangeText}
+        placeholderTextColor={theme.color.onSurfaceLight}
+      />
     </TouchableOpacity>
   );
 };
