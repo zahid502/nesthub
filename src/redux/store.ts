@@ -8,6 +8,7 @@ import bottomTabReducer from './slices/bottomTab/bottomTab-slice';
 import postsSlice from './slices/posts/posts-slice';
 import contactsSlice from './slices/contacts/contacts-slice';
 import friendsSlice from './slices/friends/friends-slice';
+import statusSlice from './slices/status/status-slice';
 
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -17,12 +18,13 @@ const rootReducer = combineReducers({
   posts: postsSlice,
   bottom: bottomTabReducer,
   friends: friendsSlice,
+  status: statusSlice,
 });
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  blacklist: ['inbox', 'chat', 'bottom', 'friends', 'posts'],
+  blacklist: ['inbox', 'chat', 'bottom', 'friends', 'posts', 'status'],
 };
 
 const store = configureStore({

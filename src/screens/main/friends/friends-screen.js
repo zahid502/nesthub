@@ -4,6 +4,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {DrawerToolbar, FriendsHeader, FriendsItem} from '@components';
 import {addFriendRequest, fetchAllUsers} from '@services/api-services';
 import {useDispatch, useSelector} from 'react-redux';
+import {launchImageLibrary} from 'react-native-image-picker';
 import {
   removeSuggestedFriends,
   setSuggestedFriends,

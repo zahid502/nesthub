@@ -42,6 +42,9 @@ const SignupScreen = ({navigation}) => {
       if (data?.status === 200) {
         setIsLoading(false);
         navigation.navigate('OtpVerification', email);
+        setName('');
+        setEmail('');
+        setPassword('');
       }
     } catch (error) {
       setIsLoading(false);
@@ -81,9 +84,6 @@ const SignupScreen = ({navigation}) => {
         .createUserWithEmailAndPassword(email, password)
         .then(user => {
           signupUser(user);
-          setName('');
-          setEmail('');
-          setPassword('');
         })
         .catch(error => {
           if (error.code === 'auth/email-already-in-use') {

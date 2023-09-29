@@ -26,9 +26,10 @@ export type MainNavParamList = {
   Posts: undefined;
   CreatePost: undefined;
   Friends: undefined;
-  FriendRequest:undefined;
-  YourFriends:undefined;
+  FriendRequest: undefined;
+  YourFriends: undefined;
   Status: undefined;
+  SeenStatus: undefined;
   Search: undefined;
 };
 //----------------------------------------------------------------

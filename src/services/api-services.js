@@ -36,7 +36,7 @@ export const signup = async (user, name, password) => {
         email: user?.user?.email,
         password: password,
         profileImage: 'https://cdn-icons-png.flaticon.com/512/9187/9187604.png',
-        deviceType: Platform.OS,
+        // deviceType: Platform.OS,
       },
     });
     return res;

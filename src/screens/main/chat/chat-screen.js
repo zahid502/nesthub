@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   ImageBackground,
+  Platform,
 } from 'react-native';
 import _ from 'lodash';
 import React, {useEffect, useState} from 'react';
@@ -14,15 +15,18 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '@react-native-firebase/database';
 import {useDispatch, useSelector} from 'react-redux';
+
+import styles from './style';
+import ChatHeader from '../../../components/ChatHeader';
+import {DateUtil} from '../../../utils/date-util';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import storage from '@react-native-firebase/storage';
 import {
   setMessages,
   setMessageNew,
   setCurrentRef,
   setPagination,
-} from '../../../redux/slices/chat/chat-slice';
-import styles from './style';
-import ChatHeader from '../../../components/ChatHeader';
-import {DateUtil} from '../../../utils/date-util';
+} from '@redux/slices/chat/chat-slice';
 
 const img = {
   uri: 'https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png',
@@ -207,6 +211,88 @@ const ChatScreen = ({route, navigation}) => {
     }
   };
 
+  const openImagePicker = () => {
+    const options = {
+      mediaType: 'photo',
+      selectionLimit: 0,
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
+
+    launchImageLibrary(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('Image picker error: ', response.error);
+      } else {
+        let imageUri = response.uri || response.assets?.[0]?.uri;
+        let fileName = response.fileName || response.assets?.[0]?.fileName;
+        const chatObj = {
+          body: imageUri,
+          senderId: userId,
+          sender: name,
+          type: 'image',
+          fileName: fileName,
+          dateTime: dateTime,
+        };
+        uploadImageToStorage(chatObj);
+      }
+    });
+  };
+
+  const handleCameraLaunch = () => {
+    const options = {
+      mediaType: 'photo',
+      selectionLimit: 0,
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
+
+    launchCamera(options, response => {
+      if (response.didCancel) {
+        console.log('User cancelled camera');
+      } else if (response.error) {
+        console.log('Camera Error: ', response.error);
+      } else {
+        let imageUri = response.uri || response.assets?.[0]?.uri;
+        let fileName = response.fileName || response.assets?.[0]?.fileName;
+        const chatObj = {
+          body: imageUri,
+          senderId: userId,
+          sender: name,
+          type: 'image',
+          fileName: fileName,
+          dateTime: dateTime,
+        };
+        uploadImageToStorage(chatObj);
+      }
+    });
+  };
+
+  const uploadImageToStorage = async item => {
+    const path = item?.body;
+    const fileName = item?.fileName;
+    const uploadUrl =
+      Platform.OS === 'ios' ? path?.replace('file://', '') : path;
+
+    await storage()
+      .ref('images/' + fileName)
+      .putFile(uploadUrl)
+      .then(response => {
+        console.log('response,, ', response);
+      })
+      .catch(error => {
+        console.log('error file uplaod...', error);
+      });
+    const httpUrl = await storage()
+      .ref('images/' + fileName)
+      .getDownloadURL();
+    console.log('httpUrl...', httpUrl);
+    return httpUrl;
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container}>
       <ChatHeader
@@ -286,7 +372,9 @@ const ChatScreen = ({route, navigation}) => {
             </View>
 
             <View style={styles.fileAndCameraIconContainer}>
-              <TouchableOpacity style={styles.attachFileIcon}>
+              <TouchableOpacity
+                style={styles.attachFileIcon}
+                onPress={openImagePicker}>
                 <Entypo name="attachment" size={20} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.camerIcon}>

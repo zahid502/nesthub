@@ -6,13 +6,14 @@ import {
   ChatScreen,
   ContactsScreen,
   InboxScreen,
-  StatusScreen,
   PostScreen,
   FriendsScreen,
   CreatePostScreen,
   FriendRequestScreen,
   YourFriendsScreen,
   SearchScreen,
+  StatusScreen,
+  SeenStatusScreen,
 } from '@screens';
 
 //-----------------
@@ -34,8 +35,9 @@ const MainNav: React.FC<IProps> = () => {
       <Screen name={'Friends'} component={FriendsScreen} />
       <Screen name={'FriendRequest'} component={FriendRequestScreen} />
       <Screen name={'YourFriends'} component={YourFriendsScreen} />
-      <Screen name={'Status'} component={StatusScreen} />
       <Screen name={'Search'} component={SearchScreen} />
+      <Screen name={'Status'} component={StatusScreen} />
+      <Screen name={'SeenStatus'} component={SeenStatusScreen} />
     </Navigator>
   );
 };

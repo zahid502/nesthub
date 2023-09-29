@@ -12,7 +12,11 @@ import CustomInputs from '../../../components/CustomInputs';
 import CustomButton from '../../../components/CustomButton';
 import auth from '@react-native-firebase/auth';
 import {useDispatch} from 'react-redux';
-import {setApiUserId, setAuthToken, setUserData} from '../../../redux/slices/auth/auth-slice';
+import {
+  setApiUserId,
+  setAuthToken,
+  setUserData,
+} from '../../../redux/slices/auth/auth-slice';
 import styles from './style';
 import {login} from '@services/api-services';
 
@@ -23,7 +27,7 @@ const LoginScreen = ({navigation}) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleApiResponse = async (user) => {
+  const handleApiResponse = async user => {
     try {
       const data = await login(user, password);
       if (data?.message == 'User is logged in.') {
